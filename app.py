@@ -39,7 +39,7 @@ from autogpt.logs import logger
 from autogpt.__main__ import main
 from autogpt.prompt import construct_prompt
 from autogpt.agent.agent import Agent
-from autogpt.models import User, Agent, Conversation
+from autogpt.models import User, Conversation
 from autogpt.database import db
 
 from flask import Flask, jsonify, request
@@ -103,7 +103,7 @@ def get_command(response_json: Dict):
 
         command_name = command["name"]
 
-        # Use an empty dictionary if 'args' field is not present in 'command' object
+        # Use an empty dictionary if 'args' field is not present in 'command' object.
         arguments = command.get("args", {})
 
         return command_name, arguments

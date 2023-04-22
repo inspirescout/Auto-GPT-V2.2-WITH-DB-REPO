@@ -173,7 +173,7 @@ def construct_prompt(ai_name: str, ai_role: str, ai_goals: str, should_continue:
     new = "y"
     question = None
     if new == "y":
-        # Create a new configuration
+        # Create a new configuration.
         config = AIConfig(ai_name=ai_name, ai_role=ai_role, ai_goals=ai_goals)
     else:
         # Load an existing configuration        

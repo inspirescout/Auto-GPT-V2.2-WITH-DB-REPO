@@ -67,7 +67,7 @@ class Agent:
         messages = [msg.get("message", {}).get("role", "") + ": " + msg.get("message", {}).get("content", "") for msg in self.full_message_history]
 
         while True:
-            # Discontinue if continuous limit is reached
+            # Discontinue if continuous limit is reached.
             loop_count += 1
             if (
                 cfg.continuous_mode
