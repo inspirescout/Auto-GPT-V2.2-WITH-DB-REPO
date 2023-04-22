@@ -9,7 +9,9 @@ from autogpt.logs import logger, print_assistant_thoughts
 from autogpt.speech import say_text
 from autogpt.spinner import Spinner
 from autogpt.utils import clean_input
-
+from autogpt.database import db
+from autogpt.models import Agent
+import json
 
 
 
@@ -39,6 +41,7 @@ class Agent:
 
     def __init__(
         self,
+        unique_id,
         ai_name,
         memory,
         full_message_history,
@@ -46,6 +49,7 @@ class Agent:
         system_prompt,
         triggering_prompt,
     ):
+        self.unique_id = unique_id
         self.ai_name = ai_name
         self.memory = memory
         self.full_message_history = full_message_history
@@ -53,11 +57,45 @@ class Agent:
         self.system_prompt = system_prompt
         self.triggering_prompt = triggering_prompt
 
+        agent = Agent.query.filter_by(unique_id=unique_id_db).first()
+        
+        if agent:
+            unique_id=self.unique_id,
+            self.ai_name = agent.ai_name
+            self.memory = agent.memory
+            self.full_message_history = agent.full_message_history
+            self.next_action_count = agent.next_action_count
+            self.system_prompt = agent.system_prompt
+            self.triggering_prompt = agent.triggering_prompt
+        else:
+        # Otherwise, create a new agent with the specified unique_id_db
+            self.unique_id_db = unique_id_db
+            agent = Agent(unique_id=self.unique_id_db,
+                        ai_name=self.ai_name,
+                        memory=self.memory,
+                        full_message_history=self.full_message_history,
+                        next_action_count=self.next_action_count,
+                        system_prompt=self.system_prompt,
+                        triggering_prompt=self.triggering_prompt)
+        db.session.add(agent)
+        db.session.commit()
+
     def update_user_input(self, new_user_input):
         self.user_input = new_user_input
     
     
     def start_interaction_loop(self, user_input=None):
+        
+        # Retrieve Agent object from database using unique ID
+        agent = Agent.query.filter_by(unique_id=self.unique_id).first()
+
+        # Update Agent object properties with latest values
+        agent.next_action_count = self.next_action_count
+        agent.memory = self.memory
+        agent.system_prompt = self.system_prompt
+        agent.triggering_prompt = self.triggering_prompt
+        agent.full_message_history = self.full_message_history
+        
         # Interaction Loop
         cfg = Config()
         loop_count = 0

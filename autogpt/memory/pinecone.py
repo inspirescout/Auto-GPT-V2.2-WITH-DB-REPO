@@ -7,14 +7,14 @@ from autogpt.memory.base import MemoryProviderSingleton
 
 
 class PineconeMemory(MemoryProviderSingleton):
-    def __init__(self, cfg):
+    def __init__(self, cfg, unique_id):
         pinecone_api_key = cfg.pinecone_api_key
         pinecone_region = cfg.pinecone_region
         pinecone.init(api_key=pinecone_api_key, environment=pinecone_region)
         dimension = 1536
         metric = "cosine"
         pod_type = "p1"
-        table_name = "auto-gpt"
+        table_name = f"auto-gpt-{unique_id}12"
         # this assumes we don't start with memory.
         # for now this works.
         # we'll need a more complicated and robust system if we want to start with

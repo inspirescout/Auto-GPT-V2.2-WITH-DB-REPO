@@ -1,9 +1,10 @@
 from autogpt.memory.local import LocalCache
 from autogpt.memory.no_memory import NoMemory
+from autogpt.memory.pinecone import PineconeMemory
 
 # List of supported memory backends
 # Add a backend to this list if the import attempt is successful
-supported_memory = ["local", "no_memory"]
+supported_memory = ["local", "no_memory", "pinecone"]
 
 try:
     from autogpt.memory.redismem import RedisMemory
@@ -47,9 +48,10 @@ def get_memory(cfg, init=False):
                 " to use Pinecone as a memory backend."
             )
         else:
-            memory = PineconeMemory(cfg)
+            memory = PineconeMemory(cfg, unique_id="")
             if init:
-                memory.clear()
+                # Do nothing
+                pass
     elif cfg.memory_backend == "redis":
         if not RedisMemory:
             print(

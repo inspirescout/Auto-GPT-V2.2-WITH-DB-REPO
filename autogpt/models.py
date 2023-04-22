@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import JSON
 import os
+from datetime import datetime
 from autogpt.database import db
 app = Flask(__name__)
 
@@ -37,3 +38,8 @@ class Conversation(db.Model):
     agent_id = db.Column(db.Integer, db.ForeignKey('agent.id'), nullable=False)
     prompt = db.Column(db.String, nullable=False)
     response = db.Column(db.String, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_input = db.Column(db.Text)
+    assistant_reply = db.Column(db.Text)
+    triggering_prompt = db.Column(db.Text)
+    next_action_count = db.Column(db.Integer)

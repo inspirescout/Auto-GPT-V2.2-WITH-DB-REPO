@@ -41,7 +41,7 @@ from autogpt.prompt import construct_prompt
 from autogpt.agent.agent import Agent
 from autogpt.models import User, Conversation
 from autogpt.database import db
-
+from autogpt.memory.pinecone import PineconeMemory
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
@@ -358,22 +358,27 @@ def shutdown():
     quit()
     return 'Server shutting down...'
 
-
+unique_id = "123"
 global agents
 agents = {}
+
 @app.route('/startnow', methods=['POST'])
 def start_ai():
-    global agent_instance, unique_id
-    # Generate a unique identifier
-    unique_id = str(uuid.uuid4())
-    
-    # Initialize the logger with the unique_id
-    logger.unique_id = unique_id
-    
+    global agents
     data = request.get_json()
     ai_name = data.get('ai_name')
     ai_role = data.get('ai_role')
     ai_goals = data.get('ai_goals')
+    
+    # Check if a unique_id was provided in the request
+    unique_id = data.get('unique_id')
+    if unique_id is None:
+        # Generate a new unique_id if one wasn't provided
+        unique_id = str(uuid.uuid4())
+    
+    # Initialize the logger with the unique_id
+    logger.unique_id = unique_id
+
     system_prompt, question = construct_prompt(ai_name, ai_role, ai_goals, should_continue='y')
 
     # Initialize variables
@@ -388,8 +393,9 @@ def start_ai():
     memory = get_memory(cfg, init=True)
 
     agent = Agent(
+        unique_id=unique_id,
         ai_name=ai_name,
-        memory=memory,
+        memory=PineconeMemory(cfg, unique_id),
         full_message_history=full_message_history,
         next_action_count=next_action_count,
         system_prompt=system_prompt,
@@ -398,8 +404,8 @@ def start_ai():
     agents[unique_id] = agent
     prompt_text = agent.start_interaction_loop()
     
-    
     return jsonify({"prompt": prompt_text, "unique_id": unique_id})
+
 
 @app.route('/send_input', methods=['POST'])
 def send_input():
